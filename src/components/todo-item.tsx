@@ -98,7 +98,7 @@ export default function TodoItem({ todo, onEdit }: Props) {
     <ReanimatedSwipeable
       ref={swipeableRef}
       renderRightActions={renderRightActions}
-      overshootRight={false}
+      overshootRight={true}
       friction={2}
       rightThreshold={40}
     >
@@ -256,6 +256,6 @@ const styles = StyleSheet.create({
     borderColor: "#FF525244",
   },
   deleteIcon: {
-    fontSize: 22,
+    fontSize: 28,
   },
 });
