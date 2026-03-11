@@ -2,11 +2,12 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { email: v.string() },
+  handler: async (ctx, { email }) => {
     return await ctx.db
       .query("todos")
       .withIndex("by_createdAt")
+      .filter((q) => q.eq(q.field("userEmail"), email))
       .order("desc")
       .collect();
   },
@@ -16,13 +17,15 @@ export const create = mutation({
   args: {
     text: v.string(),
     priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
+    userEmail: v.string(),
   },
-  handler: async (ctx, { text, priority }) => {
+  handler: async (ctx, { text, priority, userEmail }) => {
     return await ctx.db.insert("todos", {
       text,
       priority,
       completed: false,
       createdAt: Date.now(),
+      userEmail,
     });
   },
 });

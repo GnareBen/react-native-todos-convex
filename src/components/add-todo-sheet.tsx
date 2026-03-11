@@ -1,5 +1,6 @@
 // components/AddTodoSheet.tsx
 import { useKeyboardOffset } from "@/hooks/use-keyboard-offset";
+import { useUser } from "@clerk/expo";
 import { useMutation } from "convex/react";
 import React, { useRef, useState } from "react";
 import {
@@ -13,8 +14,7 @@ import {
   View,
 } from "react-native";
 import { api } from "../../convex/_generated/api";
-import { useTheme, typography, spacing, radii, shadows } from "../theme";
-
+import { radii, shadows, spacing, typography, useTheme } from "../theme";
 
 type Priority = "low" | "medium" | "high";
 
@@ -35,6 +35,8 @@ const PRIORITIES: {
 ];
 
 export default function AddTodoSheet({ visible, onClose }: Props) {
+  const { user } = useUser();
+
   const { colors } = useTheme();
   const [text, setText] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
@@ -76,7 +78,11 @@ export default function AddTodoSheet({ visible, onClose }: Props) {
     }
     setLoading(true);
     try {
-      await create({ text: text.trim(), priority });
+      await create({
+        text: text.trim(),
+        priority,
+        userEmail: user?.emailAddresses[0]?.emailAddress ?? "",
+      });
       setText("");
       setPriority("medium");
       onClose();

@@ -1,13 +1,31 @@
-import { ClerkProvider } from "@clerk/expo";
+import { ClerkLoaded, ClerkProvider, useAuth } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
 export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-      <Slot />
+      <ClerkLoaded>
+        <ProtectedRoutes />
+      </ClerkLoaded>
     </ClerkProvider>
+  );
+}
+
+function ProtectedRoutes() {
+  const { isSignedIn } = useAuth();
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Protected guard={!isSignedIn}>
+        <Stack.Screen name="(auth)" />
+      </Stack.Protected>
+      <Stack.Protected guard={isSignedIn!}>
+        <Stack.Screen name="/(home)" />
+      </Stack.Protected>
+    </Stack>
   );
 }

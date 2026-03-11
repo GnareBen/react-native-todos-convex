@@ -3,6 +3,7 @@ import { useQuery } from "convex/react";
 import React, { useMemo, useState } from "react";
 import {
   FlatList,
+  Image,
   StatusBar,
   StyleSheet,
   Text,
@@ -19,6 +20,7 @@ import EmptyState from "@/components/empty-state";
 import TodoItem from "@/components/todo-item";
 import { radii, shadows, spacing, typography, useTheme } from "@/theme";
 import { useClerk, useUser } from "@clerk/expo";
+import { useRouter } from "expo-router";
 
 type Filter = "all" | "active" | "completed";
 
@@ -30,15 +32,18 @@ const FILTERS: { value: Filter; label: string }[] = [
 
 export default function HomeScreen() {
   const { colors, isDark } = useTheme();
-  const todos = useQuery(api.todos.list) ?? [];
+  const { user } = useUser();
+  const todos =
+    useQuery(api.todos.list, {
+      email: user?.emailAddresses[0]?.emailAddress ?? "",
+    }) ?? [];
   const [filter, setFilter] = useState<Filter>("all");
   const [showAdd, setShowAdd] = useState(false);
   const [editingTodo, setEditingTodo] = useState<(typeof todos)[0] | null>(
     null,
   );
 
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const router = useRouter();
 
   const filtered = useMemo(() => {
     switch (filter) {
@@ -81,16 +86,46 @@ export default function HomeScreen() {
               Focus
             </Text>
           </View>
-          <View style={styles.statsContainer}>
-            <Text style={[styles.statsNumber, { color: colors.accent }]}>
-              {stats.completed}
-            </Text>
-            <Text style={[styles.statsSlash, { color: colors.borderMuted }]}>
-              /
-            </Text>
-            <Text style={[styles.statsTotal, { color: colors.textMuted }]}>
-              {stats.total}
-            </Text>
+          <View style={styles.headerRight}>
+            <View style={styles.statsContainer}>
+              <Text style={[styles.statsNumber, { color: colors.accent }]}>
+                {stats.completed}
+              </Text>
+              <Text style={[styles.statsSlash, { color: colors.borderMuted }]}>
+                /
+              </Text>
+              <Text style={[styles.statsTotal, { color: colors.textMuted }]}>
+                {stats.total}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => router.push("/(home)/profile")}
+              activeOpacity={0.75}
+            >
+              {user?.imageUrl ? (
+                <Image
+                  source={{ uri: user.imageUrl }}
+                  style={[styles.avatar, { borderColor: colors.borderSubtle }]}
+                />
+              ) : (
+                <View
+                  style={[
+                    styles.avatar,
+                    styles.avatarFallback,
+                    {
+                      backgroundColor: colors.accentMuted,
+                      borderColor: colors.borderSubtle,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[styles.avatarInitials, { color: colors.accent }]}
+                  >
+                    {(user?.firstName?.[0] ?? "").toUpperCase() || "?"}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -199,6 +234,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xxl,
     paddingTop: spacing.xl,
     paddingBottom: spacing.sm,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1.5,
+  },
+  avatarFallback: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarInitials: {
+    fontSize: 14,
+    fontWeight: "700",
   },
   headerEyebrow: { ...typography.eyebrow, marginBottom: spacing.xs },
   headerTitle: { ...typography.display },
