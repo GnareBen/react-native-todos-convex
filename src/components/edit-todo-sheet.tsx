@@ -15,6 +15,8 @@ import {
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 
+import { useTheme, typography, spacing, radii, shadows } from "../theme";
+
 type Priority = "low" | "medium" | "high";
 
 interface Todo {
@@ -28,18 +30,14 @@ interface Props {
   onClose: () => void;
 }
 
-const PRIORITIES: {
-  value: Priority;
-  label: string;
-  color: string;
-  emoji: string;
-}[] = [
-  { value: "low", label: "Basse", color: "#4CAF50", emoji: "🟢" },
-  { value: "medium", label: "Moyenne", color: "#FFB830", emoji: "🟡" },
-  { value: "high", label: "Haute", color: "#FF5252", emoji: "🔴" },
+const PRIORITIES: { value: Priority; label: string; emoji: string }[] = [
+  { value: "low", label: "Basse", emoji: "🟢" },
+  { value: "medium", label: "Moyenne", emoji: "🟡" },
+  { value: "high", label: "Haute", emoji: "🔴" },
 ];
 
 export default function EditTodoSheet({ todo, onClose }: Props) {
+  const { colors } = useTheme();
   const [text, setText] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
   const [loading, setLoading] = useState(false);
@@ -49,7 +47,6 @@ export default function EditTodoSheet({ todo, onClose }: Props) {
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const keyboardOffset = useKeyboardOffset();
 
-  // Pré-remplir quand le todo change
   useEffect(() => {
     if (todo) {
       setText(todo.text);
@@ -88,18 +85,13 @@ export default function EditTodoSheet({ todo, onClose }: Props) {
       shake();
       return;
     }
-
     setLoading(true);
     try {
       const promises: Promise<unknown>[] = [];
-
-      if (text.trim() !== todo.text) {
+      if (text.trim() !== todo.text)
         promises.push(updateText({ id: todo._id, text: text.trim() }));
-      }
-      if (priority !== todo.priority) {
+      if (priority !== todo.priority)
         promises.push(updatePriority({ id: todo._id, priority }));
-      }
-
       await Promise.all(promises);
       onClose();
     } finally {
@@ -118,81 +110,119 @@ export default function EditTodoSheet({ todo, onClose }: Props) {
       animationType="slide"
       onRequestClose={onClose}
     >
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Animated.View style={[styles.sheet, { marginBottom: keyboardOffset }]}>
+      <Pressable
+        style={[styles.overlay, { backgroundColor: colors.overlay }]}
+        onPress={onClose}
+      >
+        <Animated.View
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: colors.bgElevated,
+              borderColor: colors.borderSubtle,
+              marginBottom: keyboardOffset,
+            },
+          ]}
+        >
           <Pressable>
-            {/* Handle */}
-            <View style={styles.handle} />
+            <View
+              style={[styles.handle, { backgroundColor: colors.borderSubtle }]}
+            />
 
             <View style={styles.titleRow}>
-              <Text style={styles.title}>Modifier la tâche</Text>
-              {hasChanges && <View style={styles.changeDot} />}
+              <Text style={[styles.title, { color: colors.textPrimary }]}>
+                Modifier la tâche
+              </Text>
+              {hasChanges && (
+                <View
+                  style={[styles.changeDot, { backgroundColor: colors.accent }]}
+                />
+              )}
             </View>
 
-            {/* Text input */}
             <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.bgInput,
+                    borderColor: colors.borderAccent,
+                    color: colors.textPrimary,
+                  },
+                ]}
                 value={text}
                 onChangeText={setText}
                 placeholder="Décrivez votre tâche..."
-                placeholderTextColor="#3A3A5C"
+                placeholderTextColor={colors.textDisabled}
                 multiline
                 maxLength={200}
                 autoFocus
               />
-              <Text style={styles.charCount}>{text.length}/200</Text>
+              <Text style={[styles.charCount, { color: colors.textDisabled }]}>
+                {text.length}/200
+              </Text>
             </Animated.View>
 
-            {/* Priority selector */}
-            <Text style={styles.label}>Priorité</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              Priorité
+            </Text>
             <View style={styles.priorityRow}>
-              {PRIORITIES.map((p) => (
-                <TouchableOpacity
-                  key={p.value}
-                  style={[
-                    styles.priorityChip,
-                    { borderColor: p.color },
-                    priority === p.value && { backgroundColor: p.color + "22" },
-                  ]}
-                  onPress={() => setPriority(p.value)}
-                  activeOpacity={0.75}
-                >
-                  <Text style={styles.priorityEmoji}>{p.emoji}</Text>
-                  <Text style={[styles.priorityLabel, { color: p.color }]}>
-                    {p.label}
-                  </Text>
-                  {priority === p.value && (
-                    <View
-                      style={[styles.selectedDot, { backgroundColor: p.color }]}
-                    />
-                  )}
-                </TouchableOpacity>
-              ))}
+              {PRIORITIES.map((p) => {
+                const cfg = colors.priority[p.value];
+                return (
+                  <TouchableOpacity
+                    key={p.value}
+                    style={[
+                      styles.priorityChip,
+                      { borderColor: cfg.color },
+                      priority === p.value && { backgroundColor: cfg.bg },
+                    ]}
+                    onPress={() => setPriority(p.value)}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={styles.priorityEmoji}>{p.emoji}</Text>
+                    <Text style={[styles.priorityLabel, { color: cfg.color }]}>
+                      {p.label}
+                    </Text>
+                    {priority === p.value && (
+                      <View
+                        style={[
+                          styles.selectedDot,
+                          { backgroundColor: cfg.color },
+                        ]}
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
-            {/* Submit */}
             <TouchableOpacity
               style={[
                 styles.submitBtn,
+                {
+                  backgroundColor: colors.accent,
+                  ...shadows.button(colors.accentGlow),
+                },
                 (!hasChanges || loading) && styles.submitBtnDisabled,
               ]}
               onPress={handleSubmit}
               disabled={!hasChanges || loading}
               activeOpacity={0.85}
             >
-              <Text style={styles.submitText}>
+              <Text style={[styles.submitText, { color: colors.textOnAccent }]}>
                 {loading ? "Enregistrement..." : "Sauvegarder"}
               </Text>
             </TouchableOpacity>
 
-            {/* Cancel */}
             <TouchableOpacity
               style={styles.cancelBtn}
               onPress={onClose}
               activeOpacity={0.7}
             >
-              <Text style={styles.cancelText}>Annuler</Text>
+              <Text style={[styles.cancelText, { color: colors.textMuted }]}>
+                Annuler
+              </Text>
             </TouchableOpacity>
           </Pressable>
         </Animated.View>
@@ -202,96 +232,63 @@ export default function EditTodoSheet({ todo, onClose }: Props) {
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "#00000088",
-    justifyContent: "flex-end",
-  },
+  overlay: { flex: 1, justifyContent: "flex-end" },
   sheet: {
-    backgroundColor: "#12122A",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: 24,
-    paddingTop: 12,
+    borderTopLeftRadius: radii.sheet,
+    borderTopRightRadius: radii.sheet,
+    paddingHorizontal: spacing.xxl,
+    paddingTop: spacing.md,
     paddingBottom: 40,
     borderTopWidth: 1,
-    borderColor: "#2A2A45",
   },
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: "#2A2A45",
     borderRadius: 2,
     alignSelf: "center",
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   titleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    marginBottom: 20,
+    gap: spacing.sm,
+    marginBottom: spacing.xl,
   },
-  title: {
-    color: "#E8E8F0",
-    fontSize: 22,
-    fontWeight: "700",
-    letterSpacing: 0.3,
-  },
-  changeDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#C9A84C",
-    marginTop: 2,
-  },
+  title: { ...typography.title },
+  changeDot: { width: 8, height: 8, borderRadius: 4, marginTop: 2 },
   input: {
-    backgroundColor: "#1A1A2E",
     borderWidth: 1.5,
-    borderColor: "#C9A84C44", // bordure dorée pour distinguer du mode création
-    borderRadius: 14,
-    padding: 16,
-    color: "#E8E8F0",
-    fontSize: 15,
-    lineHeight: 22,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
     minHeight: 80,
     textAlignVertical: "top",
+    ...typography.body,
   },
   charCount: {
-    color: "#3A3A5C",
-    fontSize: 11,
+    ...typography.caption,
     textAlign: "right",
     marginTop: 6,
     marginRight: 4,
   },
   label: {
-    color: "#8888AA",
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    marginTop: 20,
-    marginBottom: 12,
+    ...typography.eyebrow,
+    marginTop: spacing.xl,
+    marginBottom: spacing.md,
   },
-  priorityRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
+  priorityRow: { flexDirection: "row", gap: spacing.sm },
   priorityChip: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: radii.md,
     borderWidth: 1.5,
     gap: 6,
     position: "relative",
   },
   priorityEmoji: { fontSize: 14 },
-  priorityLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
+  priorityLabel: { ...typography.label },
   selectedDot: {
     position: "absolute",
     top: 6,
@@ -301,34 +298,17 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   submitBtn: {
-    marginTop: 28,
-    backgroundColor: "#C9A84C",
-    borderRadius: 16,
+    marginTop: spacing.xxxl,
+    borderRadius: radii.xl,
     paddingVertical: 16,
     alignItems: "center",
-    shadowColor: "#C9A84C",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
   },
-  submitBtnDisabled: {
-    opacity: 0.35,
-  },
-  submitText: {
-    color: "#0D0D1A",
-    fontSize: 16,
-    fontWeight: "800",
-    letterSpacing: 0.5,
-  },
+  submitBtnDisabled: { opacity: 0.35 },
+  submitText: { ...typography.button },
   cancelBtn: {
-    marginTop: 12,
+    marginTop: spacing.md,
     alignItems: "center",
     paddingVertical: 10,
   },
-  cancelText: {
-    color: "#555570",
-    fontSize: 14,
-    fontWeight: "600",
-  },
+  cancelText: { ...typography.label },
 });

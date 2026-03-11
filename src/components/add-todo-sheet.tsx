@@ -13,6 +13,8 @@ import {
   View,
 } from "react-native";
 import { api } from "../../convex/_generated/api";
+import { useTheme, typography, spacing, radii, shadows } from "../theme";
+
 
 type Priority = "low" | "medium" | "high";
 
@@ -33,6 +35,7 @@ const PRIORITIES: {
 ];
 
 export default function AddTodoSheet({ visible, onClose }: Props) {
+  const { colors } = useTheme();
   const [text, setText] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
   const [loading, setLoading] = useState(false);
@@ -95,66 +98,103 @@ export default function AddTodoSheet({ visible, onClose }: Props) {
       animationType="slide"
       onRequestClose={handleClose}
     >
-      <Pressable style={styles.overlay} onPress={handleClose}>
-        <Animated.View style={[styles.sheet, { marginBottom: keyboardOffset }]}>
+      <Pressable
+        style={[styles.overlay, { backgroundColor: colors.overlay }]}
+        onPress={handleClose}
+      >
+        <Animated.View
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: colors.bgElevated,
+              borderColor: colors.borderSubtle,
+              marginBottom: keyboardOffset,
+            },
+          ]}
+        >
           <Pressable>
-            {/* Handle */}
-            <View style={styles.handle} />
+            <View
+              style={[styles.handle, { backgroundColor: colors.borderSubtle }]}
+            />
 
-            <Text style={styles.title}>Nouvelle tâche</Text>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>
+              Nouvelle tâche
+            </Text>
 
-            {/* Text input */}
             <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.bgInput,
+                    borderColor: colors.borderMuted,
+                    color: colors.textPrimary,
+                  },
+                ]}
                 value={text}
                 onChangeText={setText}
                 placeholder="Décrivez votre tâche..."
-                placeholderTextColor="#3A3A5C"
+                placeholderTextColor={colors.textDisabled}
                 multiline
                 maxLength={200}
                 autoFocus
                 returnKeyType="done"
+                blurOnSubmit
                 onSubmitEditing={handleSubmit}
               />
-              <Text style={styles.charCount}>{text.length}/200</Text>
+              <Text style={[styles.charCount, { color: colors.textDisabled }]}>
+                {text.length}/200
+              </Text>
             </Animated.View>
 
-            {/* Priority selector */}
-            <Text style={styles.label}>Priorité</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              Priorité
+            </Text>
             <View style={styles.priorityRow}>
-              {PRIORITIES.map((p) => (
-                <TouchableOpacity
-                  key={p.value}
-                  style={[
-                    styles.priorityChip,
-                    { borderColor: p.color },
-                    priority === p.value && { backgroundColor: p.color + "22" },
-                  ]}
-                  onPress={() => setPriority(p.value)}
-                  activeOpacity={0.75}
-                >
-                  <Text style={styles.priorityEmoji}>{p.emoji}</Text>
-                  <Text style={[styles.priorityLabel, { color: p.color }]}>
-                    {p.label}
-                  </Text>
-                  {priority === p.value && (
-                    <View
-                      style={[styles.selectedDot, { backgroundColor: p.color }]}
-                    />
-                  )}
-                </TouchableOpacity>
-              ))}
+              {PRIORITIES.map((p) => {
+                const cfg = colors.priority[p.value];
+                return (
+                  <TouchableOpacity
+                    key={p.value}
+                    style={[
+                      styles.priorityChip,
+                      { borderColor: cfg.color },
+                      priority === p.value && { backgroundColor: cfg.bg },
+                    ]}
+                    onPress={() => setPriority(p.value)}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={styles.priorityEmoji}>{p.emoji}</Text>
+                    <Text style={[styles.priorityLabel, { color: cfg.color }]}>
+                      {p.label}
+                    </Text>
+                    {priority === p.value && (
+                      <View
+                        style={[
+                          styles.selectedDot,
+                          { backgroundColor: cfg.color },
+                        ]}
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
-            {/* Submit */}
             <TouchableOpacity
-              style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
+              style={[
+                styles.submitBtn,
+                {
+                  backgroundColor: colors.accent,
+                  ...shadows.button(colors.accentGlow),
+                },
+                loading && styles.submitBtnDisabled,
+              ]}
               onPress={handleSubmit}
               disabled={loading}
               activeOpacity={0.85}
             >
-              <Text style={styles.submitText}>
+              <Text style={[styles.submitText, { color: colors.textOnAccent }]}>
                 {loading ? "Enregistrement..." : "Ajouter la tâche"}
               </Text>
             </TouchableOpacity>
@@ -166,83 +206,56 @@ export default function AddTodoSheet({ visible, onClose }: Props) {
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "#00000088",
-    justifyContent: "flex-end",
-  },
+  overlay: { flex: 1, justifyContent: "flex-end" },
   sheet: {
-    backgroundColor: "#12122A",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: 24,
-    paddingTop: 12,
+    borderTopLeftRadius: radii.sheet,
+    borderTopRightRadius: radii.sheet,
+    paddingHorizontal: spacing.xxl,
+    paddingTop: spacing.md,
     paddingBottom: 40,
-    borderColor: "#2A2A45",
+    borderTopWidth: 1,
   },
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: "#2A2A45",
     borderRadius: 2,
     alignSelf: "center",
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
-  title: {
-    color: "#E8E8F0",
-    fontSize: 22,
-    fontWeight: "700",
-    letterSpacing: 0.3,
-    marginBottom: 20,
-  },
+  title: { ...typography.title, marginBottom: spacing.xl },
   input: {
-    backgroundColor: "#1A1A2E",
     borderWidth: 1.5,
-    borderColor: "#2A2A45",
-    borderRadius: 14,
-    padding: 16,
-    color: "#E8E8F0",
-    fontSize: 15,
-    lineHeight: 22,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
     minHeight: 80,
     textAlignVertical: "top",
+    ...typography.body,
   },
   charCount: {
-    color: "#3A3A5C",
-    fontSize: 11,
+    ...typography.caption,
     textAlign: "right",
     marginTop: 6,
     marginRight: 4,
   },
   label: {
-    color: "#8888AA",
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    marginTop: 20,
-    marginBottom: 12,
+    ...typography.eyebrow,
+    marginTop: spacing.xl,
+    marginBottom: spacing.md,
   },
-  priorityRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
+  priorityRow: { flexDirection: "row", gap: spacing.sm },
   priorityChip: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: radii.md,
     borderWidth: 1.5,
     gap: 6,
     position: "relative",
   },
   priorityEmoji: { fontSize: 14 },
-  priorityLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
+  priorityLabel: { ...typography.label },
   selectedDot: {
     position: "absolute",
     top: 6,
@@ -252,24 +265,11 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   submitBtn: {
-    marginTop: 28,
-    backgroundColor: "#C9A84C",
-    borderRadius: 16,
+    marginTop: spacing.xxxl,
+    borderRadius: radii.xl,
     paddingVertical: 16,
     alignItems: "center",
-    shadowColor: "#C9A84C",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
   },
-  submitBtnDisabled: {
-    opacity: 0.6,
-  },
-  submitText: {
-    color: "#0D0D1A",
-    fontSize: 16,
-    fontWeight: "800",
-    letterSpacing: 0.5,
-  },
+  submitBtnDisabled: { opacity: 0.6 },
+  submitText: { ...typography.button },
 });

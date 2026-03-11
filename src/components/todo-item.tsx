@@ -8,7 +8,6 @@ import ReanimatedSwipeable, {
 import {
   default as Animated,
   interpolate,
-  default as Reanimated,
   SharedValue,
   useAnimatedStyle,
   useSharedValue,
@@ -17,6 +16,8 @@ import {
 } from "react-native-reanimated";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
+
+import { radii, shadows, spacing, typography, useTheme } from "@/theme";
 
 type Priority = "low" | "medium" | "high";
 
@@ -33,19 +34,19 @@ interface Props {
   onEdit: (todo: Todo) => void;
 }
 
-const PRIORITY_CONFIG: Record<Priority, { color: string; label: string }> = {
-  low: { color: "#4CAF50", label: "L" },
-  medium: { color: "#FFB830", label: "M" },
-  high: { color: "#FF5252", label: "H" },
+const PRIORITY_LABEL: Record<Priority, string> = {
+  low: "L",
+  medium: "M",
+  high: "H",
 };
 
 export default function TodoItem({ todo, onEdit }: Props) {
+  const { colors } = useTheme();
   const toggleComplete = useMutation(api.todos.toggleComplete);
   const remove = useMutation(api.todos.remove);
   const swipeableRef = useRef<SwipeableMethods>(null);
 
   const scale = useSharedValue(1);
-
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
@@ -84,41 +85,53 @@ export default function TodoItem({ todo, onEdit }: Props) {
       ],
     }));
     return (
-      <TouchableOpacity onPress={handleDelete} style={styles.deleteAction}>
-        <Reanimated.Text style={[styles.deleteIcon, iconStyle]}>
-          🗑
-        </Reanimated.Text>
+      <TouchableOpacity
+        onPress={handleDelete}
+        style={[
+          styles.deleteAction,
+          {
+            backgroundColor: colors.errorMuted,
+            borderColor: colors.errorBorder,
+          },
+        ]}
+      >
+        <Animated.Text style={[styles.deleteIcon, iconStyle]}>🗑</Animated.Text>
       </TouchableOpacity>
     );
   };
 
-  const priority = PRIORITY_CONFIG[todo.priority];
+  const priorityCfg = colors.priority[todo.priority];
 
   return (
     <ReanimatedSwipeable
       ref={swipeableRef}
       renderRightActions={renderRightActions}
-      overshootRight={true}
+      overshootRight={false}
       friction={2}
       rightThreshold={40}
     >
-      <Animated.View style={[styles.container, animatedStyle]}>
-        {/* Priority indicator */}
+      <Animated.View
+        style={[
+          styles.container,
+          animatedStyle,
+          {
+            backgroundColor: colors.bgSurface,
+            borderColor: colors.borderSubtle,
+            ...shadows.card,
+          },
+        ]}
+      >
         <View
           style={[
             styles.priorityBadge,
-            {
-              backgroundColor: priority.color + "22",
-              borderColor: priority.color,
-            },
+            { backgroundColor: priorityCfg.bg, borderColor: priorityCfg.color },
           ]}
         >
-          <Text style={[styles.priorityText, { color: priority.color }]}>
-            {priority.label}
+          <Text style={[styles.priorityText, { color: priorityCfg.color }]}>
+            {PRIORITY_LABEL[todo.priority]}
           </Text>
         </View>
 
-        {/* Content */}
         <TouchableOpacity
           style={styles.content}
           onPress={handleToggle}
@@ -127,12 +140,19 @@ export default function TodoItem({ todo, onEdit }: Props) {
           activeOpacity={0.7}
         >
           <Text
-            style={[styles.text, todo.completed && styles.textCompleted]}
+            style={[
+              styles.text,
+              { color: colors.textPrimary },
+              todo.completed && {
+                color: colors.textMuted,
+                textDecorationLine: "line-through",
+              },
+            ]}
             numberOfLines={2}
           >
             {todo.text}
           </Text>
-          <Text style={styles.date}>
+          <Text style={[styles.date, { color: colors.textMuted }]}>
             {new Date(todo.createdAt).toLocaleDateString("fr-FR", {
               day: "2-digit",
               month: "short",
@@ -140,11 +160,12 @@ export default function TodoItem({ todo, onEdit }: Props) {
               minute: "2-digit",
             })}
             {"  ·  "}
-            <Text style={styles.editHint}>Maintenir pour éditer</Text>
+            <Text style={[styles.editHint, { color: colors.textDisabled }]}>
+              Maintenir pour éditer
+            </Text>
           </Text>
         </TouchableOpacity>
 
-        {/* Checkbox */}
         <TouchableOpacity
           onPress={handleToggle}
           style={styles.checkbox}
@@ -153,10 +174,18 @@ export default function TodoItem({ todo, onEdit }: Props) {
           <View
             style={[
               styles.checkboxInner,
-              todo.completed && styles.checkboxChecked,
+              { borderColor: colors.borderMuted },
+              todo.completed && {
+                backgroundColor: colors.accent,
+                borderColor: colors.accent,
+              },
             ]}
           >
-            {todo.completed && <Text style={styles.checkmark}>✓</Text>}
+            {todo.completed && (
+              <Text style={[styles.checkmark, { color: colors.textOnAccent }]}>
+                ✓
+              </Text>
+            )}
           </View>
         </TouchableOpacity>
       </Animated.View>
@@ -168,94 +197,45 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1A1A2E",
-    borderRadius: 16,
-    marginHorizontal: 16,
+    borderRadius: radii.xl,
+    marginHorizontal: spacing.lg,
     marginVertical: 6,
     paddingVertical: 14,
     paddingHorizontal: 14,
     borderWidth: 1,
-    borderColor: "#2A2A45",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
   },
   priorityBadge: {
     width: 28,
     height: 28,
-    borderRadius: 8,
+    borderRadius: radii.sm,
     borderWidth: 1.5,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginRight: spacing.md,
   },
-  priorityText: {
-    fontSize: 11,
-    fontWeight: "800",
-    letterSpacing: 0.5,
-  },
-  content: {
-    flex: 1,
-    gap: 4,
-  },
-  text: {
-    color: "#E8E8F0",
-    fontSize: 15,
-    fontWeight: "500",
-    lineHeight: 21,
-    letterSpacing: 0.2,
-  },
-  textCompleted: {
-    color: "#555570",
-    textDecorationLine: "line-through",
-  },
-  date: {
-    color: "#555570",
-    fontSize: 11,
-    marginTop: 2,
-  },
-  editHint: {
-    color: "#3A3A5C",
-    fontSize: 10,
-    fontStyle: "italic",
-  },
-  checkbox: {
-    marginLeft: 12,
-    padding: 4,
-  },
+  priorityText: { ...typography.eyebrow, letterSpacing: 0.5 },
+  content: { flex: 1, gap: spacing.xs },
+  text: { ...typography.body },
+  date: { ...typography.caption, marginTop: 2 },
+  editHint: { ...typography.hint },
+  checkbox: { marginLeft: spacing.md, padding: spacing.xs },
   checkboxInner: {
     width: 24,
     height: 24,
-    borderRadius: 8,
+    borderRadius: radii.sm,
     borderWidth: 2,
-    borderColor: "#3A3A5C",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "transparent",
   },
-  checkboxChecked: {
-    backgroundColor: "#C9A84C",
-    borderColor: "#C9A84C",
-  },
-  checkmark: {
-    color: "#0D0D1A",
-    fontSize: 13,
-    fontWeight: "900",
-  },
+  checkmark: { fontSize: 13, fontWeight: "900" },
   deleteAction: {
-    backgroundColor: "#FF525222",
     justifyContent: "center",
     alignItems: "center",
     width: 72,
     marginVertical: 6,
-    marginRight: 16,
-    borderRadius: 16,
+    marginRight: spacing.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
-    borderColor: "#FF525244",
   },
-  deleteIcon: {
-    fontSize: 28,
-  },
+  deleteIcon: { fontSize: 22 },
 });

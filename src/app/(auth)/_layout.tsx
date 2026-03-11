@@ -8,9 +8,10 @@ export default function Layout() {
     return null;
   }
 
-  if (!isSignedIn) {
-    return <Redirect href="/(auth)/sign-in" />;
+  // Already signed in → redirect to home
+  if (isSignedIn) {
+    return <Redirect href="/(home)" />;
   }
 
-  return <Stack />;
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
