@@ -8,14 +8,15 @@
     "scheme": "g-todo",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/images/icon.png",
+      "bundleIdentifier": "com.anonymous.gtodo"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/images/hero.png",
+        "backgroundImage": "./assets/images/hero.png",
+        "monochromeImage": "./assets/images/hero.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.gtodo"
@@ -29,14 +30,15 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F4F4F8",
+          "backgroundColor": "#A8823C",
           "android": {
-            "image": "./assets/images/splash-icon.png",
+            "image": "./assets/images/hero.png",
             "dark": {
-              "image": "./assets/images/splash-icon.png",
-              "backgroundColor": "#0D0D1A"
+              "image": "./assets/images/hero.png",
+              "backgroundColor": "#C9A84C"
             },
-            "imageWidth": 200
+            "imageWidth": 600,
+            "resizeMode": "cover"
           }
         }
       ]
