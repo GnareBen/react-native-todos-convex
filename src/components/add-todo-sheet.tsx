@@ -1,6 +1,5 @@
 // components/AddTodoSheet.tsx
 import { useKeyboardOffset } from "@/hooks/use-keyboard-offset";
-import { useUser } from "@clerk/expo";
 import { useMutation } from "convex/react";
 import React, { useRef, useState } from "react";
 import {
@@ -35,8 +34,6 @@ const PRIORITIES: {
 ];
 
 export default function AddTodoSheet({ visible, onClose }: Props) {
-  const { user } = useUser();
-
   const { colors } = useTheme();
   const [text, setText] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");

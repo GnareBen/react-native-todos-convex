@@ -5,10 +5,14 @@ import { type Href, Link, useRouter } from "expo-router";
 import React from "react";
 import {
   Animated,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
@@ -157,102 +161,108 @@ export default function Page() {
   }
 
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        { backgroundColor: colors.bgBase, paddingBottom: keyboardOffset },
-      ]}
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: colors.bgBase }]}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <Text style={[styles.eyebrow, { color: colors.accent }]}>
-        WELCOME BACK
-      </Text>
-      <Text style={[styles.title, { color: colors.textPrimary }]}>Sign in</Text>
-
-      <View style={styles.form}>
-        <Text style={[styles.label, { color: colors.textSecondary }]}>
-          Email address
-        </Text>
-        <TextInput
-          style={[
-            styles.input,
-            {
-              backgroundColor: colors.bgInput,
-              borderColor: colors.borderMuted,
-              color: colors.textPrimary,
-            },
-          ]}
-          autoCapitalize="none"
-          value={emailAddress}
-          placeholder="Enter email"
-          placeholderTextColor={colors.textDisabled}
-          onChangeText={setEmailAddress}
-          keyboardType="email-address"
-        />
-        {errors.fields.identifier && (
-          <Text style={[styles.error, { color: colors.error }]}>
-            {errors.fields.identifier.message}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <Animated.View>
+          <Text style={[styles.eyebrow, { color: colors.accent }]}>
+            WELCOME BACK
           </Text>
-        )}
-
-        <Text style={[styles.label, { color: colors.textSecondary }]}>
-          Password
-        </Text>
-        <TextInput
-          style={[
-            styles.input,
-            {
-              backgroundColor: colors.bgInput,
-              borderColor: colors.borderMuted,
-              color: colors.textPrimary,
-            },
-          ]}
-          value={password}
-          placeholder="Enter password"
-          placeholderTextColor={colors.textDisabled}
-          secureTextEntry
-          onChangeText={setPassword}
-        />
-        {errors.fields.password && (
-          <Text style={[styles.error, { color: colors.error }]}>
-            {errors.fields.password.message}
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            Sign in
           </Text>
-        )}
-      </View>
 
-      <Pressable
-        style={({ pressed }) => [
-          styles.button,
-          {
-            backgroundColor: colors.accent,
-            ...shadows.button(colors.accentGlow),
-          },
-          (!emailAddress || !password || fetchStatus === "fetching") &&
-            styles.buttonDisabled,
-          pressed && styles.buttonPressed,
-        ]}
-        onPress={handleSubmit}
-        disabled={!emailAddress || !password || fetchStatus === "fetching"}
-      >
-        <Text style={[styles.buttonText, { color: colors.textOnAccent }]}>
-          Continue
-        </Text>
-      </Pressable>
+          <View style={styles.form}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              Email address
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.bgInput,
+                  borderColor: colors.borderMuted,
+                  color: colors.textPrimary,
+                },
+              ]}
+              autoCapitalize="none"
+              value={emailAddress}
+              placeholder="Enter email"
+              placeholderTextColor={colors.textDisabled}
+              onChangeText={setEmailAddress}
+              keyboardType="email-address"
+            />
+            {errors.fields.identifier && (
+              <Text style={[styles.error, { color: colors.error }]}>
+                {errors.fields.identifier.message}
+              </Text>
+            )}
 
-      {/* {errors && (
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              Password
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.bgInput,
+                  borderColor: colors.borderMuted,
+                  color: colors.textPrimary,
+                },
+              ]}
+              value={password}
+              placeholder="Enter password"
+              placeholderTextColor={colors.textDisabled}
+              secureTextEntry
+              onChangeText={setPassword}
+            />
+            {errors.fields.password && (
+              <Text style={[styles.error, { color: colors.error }]}>
+                {errors.fields.password.message}
+              </Text>
+            )}
+          </View>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              {
+                backgroundColor: colors.accent,
+                ...shadows.button(colors.accentGlow),
+              },
+              (!emailAddress || !password || fetchStatus === "fetching") &&
+                styles.buttonDisabled,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={handleSubmit}
+            disabled={!emailAddress || !password || fetchStatus === "fetching"}
+          >
+            <Text style={[styles.buttonText, { color: colors.textOnAccent }]}>
+              Continue
+            </Text>
+          </Pressable>
+
+          {/* {errors && (
         <Text style={[styles.debug, { color: colors.textMuted }]}>
           {JSON.stringify(errors, null, 2)}
         </Text>
       )} */}
 
-      <View style={styles.linkContainer}>
-        <Text style={{ color: colors.textSecondary }}>
-          Don't have an account?{" "}
-        </Text>
-        <Link href="/sign-up">
-          <Text style={[styles.link, { color: colors.accent }]}>Sign up</Text>
-        </Link>
-      </View>
-    </Animated.View>
+          <View style={styles.linkContainer}>
+            <Text style={{ color: colors.textSecondary }}>
+              Don't have an account?{" "}
+            </Text>
+            <Link href="/sign-up">
+              <Text style={[styles.link, { color: colors.accent }]}>
+                Sign up
+              </Text>
+            </Link>
+          </View>
+        </Animated.View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
