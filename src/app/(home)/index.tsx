@@ -1,5 +1,4 @@
 // app/index.tsx
-import { useQuery } from "convex/react";
 import React, { useMemo, useState } from "react";
 import {
   FlatList,
@@ -19,7 +18,9 @@ import EditTodoSheet from "@/components/edit-todo-sheet";
 import EmptyState from "@/components/empty-state";
 import TodoItem from "@/components/todo-item";
 import { radii, shadows, spacing, typography, useTheme } from "@/theme";
-import { useClerk, useUser } from "@clerk/expo";
+import { useUser } from "@clerk/expo";
+
+import { useConvexAuth, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 
 type Filter = "all" | "active" | "completed";
@@ -33,10 +34,9 @@ const FILTERS: { value: Filter; label: string }[] = [
 export default function HomeScreen() {
   const { colors, isDark } = useTheme();
   const { user } = useUser();
-  const todos =
-    useQuery(api.todos.list, {
-      email: user?.emailAddresses[0]?.emailAddress ?? "",
-    }) ?? [];
+  const auth = useConvexAuth();
+  console.log("auth", auth);
+  const todos = useQuery(api.todos.list, {}) ?? [];
   const [filter, setFilter] = useState<Filter>("all");
   const [showAdd, setShowAdd] = useState(false);
   const [editingTodo, setEditingTodo] = useState<(typeof todos)[0] | null>(

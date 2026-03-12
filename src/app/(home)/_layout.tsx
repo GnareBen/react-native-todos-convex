@@ -1,24 +1,14 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { Stack } from "expo-router";
-import { useColorScheme } from "react-native";
-
-const convex = new ConvexReactClient(
-  process.env.EXPO_PUBLIC_CONVEX_URL as string,
-);
+import { useAuth } from "@clerk/expo";
+import { Redirect, Stack } from "expo-router";
 
 export default function HomeLayout() {
-  const colorScheme = useColorScheme();
+  const { isSignedIn, isLoaded } = useAuth();
 
-  return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <ConvexProvider client={convex}>
-        <Stack screenOptions={{ headerShown: false }} />
-      </ConvexProvider>
-    </ThemeProvider>
-  );
+  if (!isLoaded) return null;
+
+  if (!isSignedIn) {
+    return <Redirect href="/(auth)/sign-in" />;
+  }
+
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

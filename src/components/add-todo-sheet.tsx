@@ -81,7 +81,6 @@ export default function AddTodoSheet({ visible, onClose }: Props) {
       await create({
         text: text.trim(),
         priority,
-        userEmail: user?.emailAddresses[0]?.emailAddress ?? "",
       });
       setText("");
       setPriority("medium");

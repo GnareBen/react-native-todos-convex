@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "first-expo",
-    "slug": "first-expo",
+    "name": "G Todo",
+    "slug": "g-todo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "firstexpo",
+    "scheme": "g-todo",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
@@ -18,7 +18,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.firstexpo"
+      "package": "com.anonymous.gtodo"
     },
     "web": {
       "output": "static",
@@ -29,10 +29,14 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#F4F4F8",
           "android": {
             "image": "./assets/images/splash-icon.png",
-            "imageWidth": 76
+            "dark": {
+              "image": "./assets/images/splash-icon.png",
+              "backgroundColor": "#0D0D1A"
+            },
+            "imageWidth": 200
           }
         }
       ]
@@ -40,6 +44,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9fbf385a-a3d6-4108-bbd9-57299ba476d3"
+      }
     }
   }
 }

@@ -1,8 +1,16 @@
+import { useKeyboardOffset } from "@/hooks/use-keyboard-offset";
 import { radii, shadows, spacing, typography, useTheme } from "@/theme";
 import { useAuth, useSignUp } from "@clerk/expo";
 import { type Href, Link, useRouter } from "expo-router";
 import React from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 export default function Page() {
   const { signUp, errors, fetchStatus } = useSignUp();
@@ -13,6 +21,8 @@ export default function Page() {
   const [emailAddress, setEmailAddress] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [code, setCode] = React.useState("");
+
+  const keyboardOffset = useKeyboardOffset();
 
   const handleSubmit = async () => {
     const { error } = await signUp.password({
@@ -66,7 +76,12 @@ export default function Page() {
     signUp.missingFields.length === 0
   ) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.bgBase }]}>
+      <Animated.View
+        style={[
+          styles.container,
+          { backgroundColor: colors.bgBase, paddingBottom: keyboardOffset },
+        ]}
+      >
         <Text style={[styles.title, { color: colors.textPrimary }]}>
           Verify your account
         </Text>
@@ -122,12 +137,17 @@ export default function Page() {
             I need a new code
           </Text>
         </Pressable>
-      </View>
+      </Animated.View>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.bgBase }]}>
+    <Animated.View
+      style={[
+        styles.container,
+        { backgroundColor: colors.bgBase, paddingBottom: keyboardOffset },
+      ]}
+    >
       <Text style={[styles.eyebrow, { color: colors.accent }]}>
         CREATE ACCOUNT
       </Text>
@@ -214,7 +234,7 @@ export default function Page() {
 
       {/* Required for sign-up flows. Clerk's bot sign-up protection is enabled by default */}
       <View nativeID="clerk-captcha" />
-    </View>
+    </Animated.View>
   );
 }
 
@@ -222,7 +242,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: spacing.page,
-    paddingTop: spacing.xxxl * 2,
+    justifyContent: "center",
     gap: spacing.md,
   },
   eyebrow: {
@@ -247,9 +267,11 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderRadius: radii.md,
-    paddingVertical: spacing.md,
+    height: 48,
     paddingHorizontal: spacing.lg,
     ...typography.body,
+    lineHeight: undefined,
+    textAlignVertical: "center",
   },
   button: {
     paddingVertical: spacing.md,

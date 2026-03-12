@@ -5,8 +5,10 @@ export default defineSchema({
   todos: defineTable({
     text: v.string(),
     completed: v.boolean(),
-    userEmail: v.string(),
+    userId: v.string(),
     priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
     createdAt: v.number(),
-  }).index("by_createdAt", ["createdAt"]),
+  })
+    .index("by_createdAt", ["createdAt"])
+    .index("by_userId_createdAt", ["userId", "createdAt"]),
 });

@@ -2,12 +2,15 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 export const list = query({
-  args: { email: v.string() },
-  handler: async (ctx, { email }) => {
+  args: {},
+  handler: async (ctx) => {
+    const auth = await ctx.auth.getUserIdentity();
+    console.log("identity", await ctx.auth.getUserIdentity());
+    if (!auth) throw new Error("Not authorized");
+
     return await ctx.db
       .query("todos")
-      .withIndex("by_createdAt")
-      .filter((q) => q.eq(q.field("userEmail"), email))
+      .withIndex("by_userId_createdAt", (q) => q.eq("userId", auth.subject))
       .order("desc")
       .collect();
   },
@@ -17,15 +20,17 @@ export const create = mutation({
   args: {
     text: v.string(),
     priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
-    userEmail: v.string(),
   },
-  handler: async (ctx, { text, priority, userEmail }) => {
+  handler: async (ctx, { text, priority }) => {
+    const auth = await ctx.auth.getUserIdentity();
+    if (!auth) throw new Error("Not authorized");
+
     return await ctx.db.insert("todos", {
       text,
       priority,
       completed: false,
       createdAt: Date.now(),
-      userEmail,
+      userId: auth.subject,
     });
   },
 });

@@ -1,8 +1,16 @@
+import { useKeyboardOffset } from "@/hooks/use-keyboard-offset";
 import { radii, shadows, spacing, typography, useTheme } from "@/theme";
 import { useSignIn } from "@clerk/expo";
 import { type Href, Link, useRouter } from "expo-router";
 import React from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 export default function Page() {
   const { signIn, errors, fetchStatus } = useSignIn();
@@ -12,6 +20,8 @@ export default function Page() {
   const [emailAddress, setEmailAddress] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [code, setCode] = React.useState("");
+
+  const keyboardOffset = useKeyboardOffset();
 
   const handleSubmit = async () => {
     const { error } = await signIn.password({
@@ -81,7 +91,12 @@ export default function Page() {
     signIn.status === "needs_client_trust"
   ) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.bgBase }]}>
+      <Animated.View
+        style={[
+          styles.container,
+          { backgroundColor: colors.bgBase, paddingBottom: keyboardOffset },
+        ]}
+      >
         <Text style={[styles.title, { color: colors.textPrimary }]}>
           Verify your account
         </Text>
@@ -137,12 +152,17 @@ export default function Page() {
             I need a new code
           </Text>
         </Pressable>
-      </View>
+      </Animated.View>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.bgBase }]}>
+    <Animated.View
+      style={[
+        styles.container,
+        { backgroundColor: colors.bgBase, paddingBottom: keyboardOffset },
+      ]}
+    >
       <Text style={[styles.eyebrow, { color: colors.accent }]}>
         WELCOME BACK
       </Text>
@@ -232,7 +252,7 @@ export default function Page() {
           <Text style={[styles.link, { color: colors.accent }]}>Sign up</Text>
         </Link>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -240,7 +260,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: spacing.page,
-    paddingTop: spacing.xxxl * 2,
+    justifyContent: "center",
     gap: spacing.md,
   },
   eyebrow: {
@@ -265,9 +285,11 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderRadius: radii.md,
-    paddingVertical: spacing.md,
+    height: 48,
     paddingHorizontal: spacing.lg,
     ...typography.body,
+    lineHeight: undefined,
+    textAlignVertical: "center",
   },
   button: {
     paddingVertical: spacing.md,
