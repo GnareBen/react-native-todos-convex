@@ -5,7 +5,6 @@ export const list = query({
   args: {},
   handler: async (ctx) => {
     const auth = await ctx.auth.getUserIdentity();
-    console.log("identity", await ctx.auth.getUserIdentity());
     if (!auth) throw new Error("Not authorized");
 
     return await ctx.db

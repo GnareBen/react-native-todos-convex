@@ -20,16 +20,23 @@ function useAuthForConvex() {
   const fetchAccessToken = useCallback(
     async ({ forceRefreshToken }: { forceRefreshToken: boolean }) => {
       try {
-        return await getToken({ template: "convex", skipCache: forceRefreshToken });
+        return await getToken({
+          template: "convex",
+          skipCache: forceRefreshToken,
+        });
       } catch {
         return null;
       }
     },
-    [isSignedIn], // eslint-disable-line react-hooks/exhaustive-deps
+    [isSignedIn],
   );
 
   return useMemo(
-    () => ({ isLoading: !isLoaded, isAuthenticated: isSignedIn ?? false, fetchAccessToken }),
+    () => ({
+      isLoading: !isLoaded,
+      isAuthenticated: isSignedIn ?? false,
+      fetchAccessToken,
+    }),
     [isLoaded, isSignedIn, fetchAccessToken],
   );
 }
