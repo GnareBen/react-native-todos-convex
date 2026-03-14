@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useMemo, useState } from "react";
 import {
   FlatList,
@@ -11,7 +10,7 @@ import {
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { api } from "../../../convex/_generated/api";
+import { api } from "../../../../convex/_generated/api";
 
 import AddTodoSheet from "@/components/add-todo-sheet";
 import EditTodoSheet from "@/components/edit-todo-sheet";
@@ -78,7 +77,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <Text style={[styles.headerEyebrow, { color: colors.accent }]}>
-              MES TÂCHES
+              MES TODOS
             </Text>
             <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
               Focus
@@ -97,7 +96,7 @@ export default function HomeScreen() {
               </Text>
             </View>
             <TouchableOpacity
-              onPress={() => router.push("/(home)/profile")}
+              onPress={() => router.push("/todo/profile")}
               activeOpacity={0.75}
             >
               {user?.imageUrl ? (

@@ -7,7 +7,7 @@ export default function RootIndex() {
   if (!isLoaded) return null;
 
   if (isSignedIn) {
-    return <Redirect href="/(home)" />;
+    return <Redirect href="/(tabs)/todo" />;
   }
 
   return <Redirect href="/(auth)/sign-in" />;

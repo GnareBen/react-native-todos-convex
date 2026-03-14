@@ -37,11 +37,15 @@
               "image": "./assets/images/hero.png",
               "backgroundColor": "#C9A84C"
             },
-            "imageWidth": 600,
-            "resizeMode": "cover"
+            "imageWidth": 250,
+            "resizeMode": "cover",
+            "enableFullScreenImage_legacy": true
           }
         }
-      ]
+      ],
+      "@clerk/expo",
+      "expo-secure-store",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

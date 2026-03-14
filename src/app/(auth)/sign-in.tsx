@@ -252,7 +252,7 @@ export default function Page() {
 
           <View style={styles.linkContainer}>
             <Text style={{ color: colors.textSecondary }}>
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
             </Text>
             <Link href="/sign-up">
               <Text style={[styles.link, { color: colors.accent }]}>

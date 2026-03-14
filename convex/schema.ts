@@ -11,4 +11,16 @@ export default defineSchema({
   })
     .index("by_createdAt", ["createdAt"])
     .index("by_userId_createdAt", ["userId", "createdAt"]),
+
+  tasks: defineTable({
+    title: v.string(),
+    description: v.string(),
+    dueDate: v.number(),
+    completed: v.boolean(),
+    userId: v.string(),
+    priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
+    createdAt: v.number(),
+  })
+    .index("by_createdAt", ["createdAt"])
+    .index("by_userId_createdAt", ["userId", "createdAt"]),
 });
