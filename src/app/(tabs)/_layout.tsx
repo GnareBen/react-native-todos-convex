@@ -1,47 +1,38 @@
-import { useTheme } from "@/theme";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { Tabs } from "expo-router";
+import { useTheme, typography } from "@/theme";
+import {NativeTabs} from "expo-router/unstable-native-tabs";
+import React from "react";
+import {TabBarContext} from "@/context/TabBarContext";
 
 export default function RootLayout() {
   const { colors } = useTheme();
+  const [isTabBarHidden, setIsTabBarHidden] = React.useState(false);
+
+
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: "#ffd33d",
-        headerShadowVisible: false,
-        headerTintColor: colors.bgBase,
-        tabBarStyle: {
-          backgroundColor: colors.bgBase,
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="todo"
-        options={{
-          title: "Todo",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "list-sharp" : "list-outline"}
-              color={color}
-              size={48}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="task"
-        options={{
-          title: "Task",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "list-sharp" : "list-outline"}
-              color={color}
-              size={48}
-            />
-          ),
-        }}
-      />
-    </Tabs>
+      <TabBarContext value={{ setIsTabBarHidden }}>
+      <NativeTabs
+          hidden={isTabBarHidden}
+          backgroundColor={colors.bgBase}
+          indicatorColor={colors.accent}
+          labelStyle={{
+            selected: {
+              color: colors.accent,
+              fontSize: typography.label.fontSize,
+              fontWeight: typography.label.fontWeight,
+            },
+          }}
+      >
+        <NativeTabs.Trigger name="todo">
+          <NativeTabs.Trigger.Label>Todos</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon md="task_alt" />
+        </NativeTabs.Trigger>
+
+        <NativeTabs.Trigger name="task">
+          <NativeTabs.Trigger.Label>Tasks</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon md="task" />
+        </NativeTabs.Trigger>
+      </NativeTabs>
+      </TabBarContext>
+
   );
 }

@@ -1,7 +1,19 @@
 import { useAuth } from "@clerk/expo";
-import { Redirect } from "expo-router";
+import { Redirect, useFocusEffect } from "expo-router";
+import { use } from 'react';
+
+import { TabBarContext } from '@/context/TabBarContext';
+
 
 export default function RootIndex() {
+
+  const { setIsTabBarHidden } = use(TabBarContext);
+
+  useFocusEffect(() => {
+    setIsTabBarHidden(true);
+    return () => setIsTabBarHidden(false);
+  });
+
   const { isSignedIn, isLoaded } = useAuth();
 
   if (!isLoaded) return null;

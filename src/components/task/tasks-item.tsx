@@ -1,12 +1,11 @@
-// components/TodoItem.tsx
+import { radii, shadows, spacing, typography, useTheme } from "@/theme";
 import { useMutation } from "convex/react";
 import React, { useRef } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ReanimatedSwipeable, {
   SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
-import {
-  default as Animated,
+import Animated, {
   interpolate,
   SharedValue,
   useAnimatedStyle,
@@ -14,24 +13,24 @@ import {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import { api } from "../../convex/_generated/api";
-import { Id } from "../../convex/_generated/dataModel";
-
-import { radii, shadows, spacing, typography, useTheme } from "@/theme";
+import { api } from "../../../convex/_generated/api";
+import { Id } from "../../../convex/_generated/dataModel";
 
 type Priority = "low" | "medium" | "high";
 
-interface Todo {
-  _id: Id<"todos">;
-  text: string;
+export interface Task {
+  _id: Id<"tasks">;
+  title: string;
+  description: string;
+  dueDate: number;
   completed: boolean;
   priority: Priority;
   createdAt: number;
 }
 
 interface Props {
-  todo: Todo;
-  onEdit: (todo: Todo) => void;
+  task: Task;
+  onEdit: (task: Task) => void;
 }
 
 const PRIORITY_LABEL: Record<Priority, string> = {
@@ -40,10 +39,10 @@ const PRIORITY_LABEL: Record<Priority, string> = {
   high: "H",
 };
 
-export default function TodoItem({ todo, onEdit }: Props) {
+export default function TaskItem({ task, onEdit }: Props) {
   const { colors } = useTheme();
-  const toggleComplete = useMutation(api.todos.toggleComplete);
-  const remove = useMutation(api.todos.remove);
+  const toggleComplete = useMutation(api.tasks.toggleComplete);
+  const remove = useMutation(api.tasks.remove);
   const swipeableRef = useRef<SwipeableMethods>(null);
 
   const scale = useSharedValue(1);
@@ -56,7 +55,7 @@ export default function TodoItem({ todo, onEdit }: Props) {
       withTiming(0.94, { duration: 80 }),
       withTiming(1, { duration: 120 }),
     );
-    toggleComplete({ id: todo._id });
+    toggleComplete({ id: task._id });
   };
 
   const handleDelete = () => {
@@ -69,7 +68,7 @@ export default function TodoItem({ todo, onEdit }: Props) {
       {
         text: "Supprimer",
         style: "destructive",
-        onPress: () => remove({ id: todo._id }),
+        onPress: () => remove({ id: task._id }),
       },
     ]);
   };
@@ -100,7 +99,13 @@ export default function TodoItem({ todo, onEdit }: Props) {
     );
   };
 
-  const priorityCfg = colors.priority[todo.priority];
+  const priorityCfg = colors.priority[task.priority];
+  const isOverdue = !task.completed && task.dueDate < Date.now();
+
+  const formattedDueDate = new Date(task.dueDate).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+  });
 
   return (
     <ReanimatedSwipeable
@@ -121,51 +126,69 @@ export default function TodoItem({ todo, onEdit }: Props) {
           },
         ]}
       >
+        {/* Priority badge */}
         <View
           style={[
             styles.priorityBadge,
-            { backgroundColor: priorityCfg.bg, borderColor: priorityCfg.color },
+            {
+              backgroundColor: priorityCfg.bg,
+              borderColor: priorityCfg.color,
+            },
           ]}
         >
           <Text style={[styles.priorityText, { color: priorityCfg.color }]}>
-            {PRIORITY_LABEL[todo.priority]}
+            {PRIORITY_LABEL[task.priority]}
           </Text>
         </View>
 
+        {/* Content */}
         <TouchableOpacity
           style={styles.content}
           onPress={handleToggle}
-          onLongPress={() => onEdit(todo)}
+          onLongPress={() => onEdit(task)}
           delayLongPress={350}
           activeOpacity={0.7}
         >
           <Text
             style={[
-              styles.text,
+              styles.title,
               { color: colors.textPrimary },
-              todo.completed && {
+              task.completed && {
                 color: colors.textMuted,
                 textDecorationLine: "line-through",
               },
             ]}
-            numberOfLines={2}
+            numberOfLines={1}
           >
-            {todo.text}
+            {task.title}
           </Text>
-          <Text style={[styles.date, { color: colors.textMuted }]}>
-            {new Date(todo.createdAt).toLocaleDateString("fr-FR", {
-              day: "2-digit",
-              month: "short",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-            {"  ·  "}
+
+          {task.description ? (
+            <Text
+              style={[styles.description, { color: colors.textSecondary }]}
+              numberOfLines={1}
+            >
+              {task.description}
+            </Text>
+          ) : null}
+
+          <View style={styles.meta}>
+            <Text
+              style={[
+                styles.dueDate,
+                { color: isOverdue ? colors.error : colors.textMuted },
+              ]}
+            >
+              {isOverdue ? "⚠ " : "📅 "}
+              {formattedDueDate}
+            </Text>
             <Text style={[styles.editHint, { color: colors.textDisabled }]}>
               Maintenir pour éditer
             </Text>
-          </Text>
+          </View>
         </TouchableOpacity>
 
+        {/* Checkbox */}
         <TouchableOpacity
           onPress={handleToggle}
           style={styles.checkbox}
@@ -175,13 +198,13 @@ export default function TodoItem({ todo, onEdit }: Props) {
             style={[
               styles.checkboxInner,
               { borderColor: colors.borderMuted },
-              todo.completed && {
+              task.completed && {
                 backgroundColor: colors.accent,
                 borderColor: colors.accent,
               },
             ]}
           >
-            {todo.completed && (
+            {task.completed && (
               <Text style={[styles.checkmark, { color: colors.textOnAccent }]}>
                 ✓
               </Text>
@@ -214,9 +237,16 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
   priorityText: { ...typography.eyebrow, letterSpacing: 0.5 },
-  content: { flex: 1, gap: spacing.xs },
-  text: { ...typography.body },
-  date: { ...typography.caption, marginTop: 2 },
+  content: { flex: 1, gap: 3 },
+  title: { ...typography.body },
+  description: { ...typography.caption, lineHeight: 16 },
+  meta: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 2,
+  },
+  dueDate: { ...typography.caption, fontWeight: "600" },
   editHint: { ...typography.hint },
   checkbox: { marginLeft: spacing.md, padding: spacing.xs },
   checkboxInner: {

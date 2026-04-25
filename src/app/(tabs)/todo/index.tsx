@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
   FlatList,
-  Image,
   StatusBar,
   StyleSheet,
   Text,
@@ -11,16 +10,14 @@ import {
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "../../../../convex/_generated/api";
-
-import AddTodoSheet from "@/components/add-todo-sheet";
-import EditTodoSheet from "@/components/edit-todo-sheet";
 import EmptyState from "@/components/empty-state";
-import TodoItem from "@/components/todo-item";
+import AddTodoSheet from "@/components/todo/add-todo-sheet";
 import { radii, shadows, spacing, typography, useTheme } from "@/theme";
-import { useUser } from "@clerk/expo";
 
 import { useQuery } from "convex/react";
-import { useRouter } from "expo-router";
+import EditTodoSheet from "@/components/todo/edit-todo-sheet";
+import TodoItem from "@/components/todo/todo-item";
+import ProfileIcon from "@/components/profile/profile-icon";
 
 type Filter = "all" | "active" | "completed";
 
@@ -32,15 +29,12 @@ const FILTERS: { value: Filter; label: string }[] = [
 
 export default function HomeScreen() {
   const { colors, isDark } = useTheme();
-  const { user } = useUser();
   const todos = useQuery(api.todos.list, {}) ?? [];
   const [filter, setFilter] = useState<Filter>("all");
   const [showAdd, setShowAdd] = useState(false);
   const [editingTodo, setEditingTodo] = useState<(typeof todos)[0] | null>(
     null,
   );
-
-  const router = useRouter();
 
   const filtered = useMemo(() => {
     switch (filter) {
@@ -95,34 +89,7 @@ export default function HomeScreen() {
                 {stats.total}
               </Text>
             </View>
-            <TouchableOpacity
-              onPress={() => router.push("/todo/profile")}
-              activeOpacity={0.75}
-            >
-              {user?.imageUrl ? (
-                <Image
-                  source={{ uri: user.imageUrl }}
-                  style={[styles.avatar, { borderColor: colors.borderSubtle }]}
-                />
-              ) : (
-                <View
-                  style={[
-                    styles.avatar,
-                    styles.avatarFallback,
-                    {
-                      backgroundColor: colors.accentMuted,
-                      borderColor: colors.borderSubtle,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[styles.avatarInitials, { color: colors.accent }]}
-                  >
-                    {(user?.firstName?.[0] ?? "").toUpperCase() || "?"}
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
+            <ProfileIcon/>
           </View>
         </View>
 

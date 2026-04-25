@@ -1,7 +1,6 @@
-// components/EditTodoSheet.tsx
 import { useKeyboardOffset } from "@/hooks/use-keyboard-offset";
 import { useMutation } from "convex/react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Animated,
   Modal,
@@ -12,47 +11,36 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { api } from "../../convex/_generated/api";
-import { Id } from "../../convex/_generated/dataModel";
-
-import { useTheme, typography, spacing, radii, shadows } from "../theme";
+import { api } from "../../../convex/_generated/api";
+import { radii, shadows, spacing, typography, useTheme } from "../../theme";
 
 type Priority = "low" | "medium" | "high";
 
-interface Todo {
-  _id: Id<"todos">;
-  text: string;
-  priority: Priority;
-}
-
 interface Props {
-  todo: Todo | null;
+  visible: boolean;
   onClose: () => void;
 }
 
-const PRIORITIES: { value: Priority; label: string; emoji: string }[] = [
-  { value: "low", label: "Basse", emoji: "🟢" },
-  { value: "medium", label: "Moyenne", emoji: "🟡" },
-  { value: "high", label: "Haute", emoji: "🔴" },
+const PRIORITIES: {
+  value: Priority;
+  label: string;
+  color: string;
+  emoji: string;
+}[] = [
+  { value: "low", label: "Basse", color: "#4CAF50", emoji: "🟢" },
+  { value: "medium", label: "Moyenne", color: "#FFB830", emoji: "🟡" },
+  { value: "high", label: "Haute", color: "#FF5252", emoji: "🔴" },
 ];
 
-export default function EditTodoSheet({ todo, onClose }: Props) {
+export default function AddTodoSheet({ visible, onClose }: Props) {
   const { colors } = useTheme();
   const [text, setText] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
   const [loading, setLoading] = useState(false);
 
-  const updateText = useMutation(api.todos.updateText);
-  const updatePriority = useMutation(api.todos.updatePriority);
+  const create = useMutation(api.todos.create);
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const keyboardOffset = useKeyboardOffset();
-
-  useEffect(() => {
-    if (todo) {
-      setText(todo.text);
-      setPriority(todo.priority);
-    }
-  }, [todo]);
 
   const shake = () => {
     Animated.sequence([
@@ -80,39 +68,40 @@ export default function EditTodoSheet({ todo, onClose }: Props) {
   };
 
   const handleSubmit = async () => {
-    if (!todo) return;
     if (!text.trim()) {
       shake();
       return;
     }
     setLoading(true);
     try {
-      const promises: Promise<unknown>[] = [];
-      if (text.trim() !== todo.text)
-        promises.push(updateText({ id: todo._id, text: text.trim() }));
-      if (priority !== todo.priority)
-        promises.push(updatePriority({ id: todo._id, priority }));
-      await Promise.all(promises);
+      await create({
+        text: text.trim(),
+        priority,
+      });
+      setText("");
+      setPriority("medium");
       onClose();
     } finally {
       setLoading(false);
     }
   };
 
-  const hasChanges = todo
-    ? text.trim() !== todo.text || priority !== todo.priority
-    : false;
+  const handleClose = () => {
+    setText("");
+    setPriority("medium");
+    onClose();
+  };
 
   return (
     <Modal
-      visible={!!todo}
+      visible={visible}
       transparent
       animationType="slide"
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <Pressable
         style={[styles.overlay, { backgroundColor: colors.overlay }]}
-        onPress={onClose}
+        onPress={handleClose}
       >
         <Animated.View
           style={[
@@ -129,16 +118,9 @@ export default function EditTodoSheet({ todo, onClose }: Props) {
               style={[styles.handle, { backgroundColor: colors.borderSubtle }]}
             />
 
-            <View style={styles.titleRow}>
-              <Text style={[styles.title, { color: colors.textPrimary }]}>
-                Modifier la tâche
-              </Text>
-              {hasChanges && (
-                <View
-                  style={[styles.changeDot, { backgroundColor: colors.accent }]}
-                />
-              )}
-            </View>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>
+              Nouvelle tâche
+            </Text>
 
             <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
               <TextInput
@@ -146,7 +128,7 @@ export default function EditTodoSheet({ todo, onClose }: Props) {
                   styles.input,
                   {
                     backgroundColor: colors.bgInput,
-                    borderColor: colors.borderAccent,
+                    borderColor: colors.borderMuted,
                     color: colors.textPrimary,
                   },
                 ]}
@@ -157,6 +139,9 @@ export default function EditTodoSheet({ todo, onClose }: Props) {
                 multiline
                 maxLength={200}
                 autoFocus
+                returnKeyType="done"
+                blurOnSubmit
+                onSubmitEditing={handleSubmit}
               />
               <Text style={[styles.charCount, { color: colors.textDisabled }]}>
                 {text.length}/200
@@ -204,24 +189,14 @@ export default function EditTodoSheet({ todo, onClose }: Props) {
                   backgroundColor: colors.accent,
                   ...shadows.button(colors.accentGlow),
                 },
-                (!hasChanges || loading) && styles.submitBtnDisabled,
+                loading && styles.submitBtnDisabled,
               ]}
               onPress={handleSubmit}
-              disabled={!hasChanges || loading}
+              disabled={loading}
               activeOpacity={0.85}
             >
               <Text style={[styles.submitText, { color: colors.textOnAccent }]}>
-                {loading ? "Enregistrement..." : "Sauvegarder"}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={onClose}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.cancelText, { color: colors.textMuted }]}>
-                Annuler
+                {loading ? "Enregistrement..." : "Ajouter la tâche"}
               </Text>
             </TouchableOpacity>
           </Pressable>
@@ -248,14 +223,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: spacing.xxl,
   },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    marginBottom: spacing.xl,
-  },
-  title: { ...typography.title },
-  changeDot: { width: 8, height: 8, borderRadius: 4, marginTop: 2 },
+  title: { ...typography.title, marginBottom: spacing.xl },
   input: {
     borderWidth: 1.5,
     borderRadius: radii.lg,
@@ -303,12 +271,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center",
   },
-  submitBtnDisabled: { opacity: 0.35 },
+  submitBtnDisabled: { opacity: 0.6 },
   submitText: { ...typography.button },
-  cancelBtn: {
-    marginTop: spacing.md,
-    alignItems: "center",
-    paddingVertical: 10,
-  },
-  cancelText: { ...typography.label },
 });

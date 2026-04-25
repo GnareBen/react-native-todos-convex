@@ -1,5 +1,5 @@
 // app/(home)/tasks/edit.tsx
-import TaskForm, { TaskFormValues } from "@/components/tasks-form";
+import TaskForm, { TaskFormValues } from "@/components/task/tasks-form";
 import { spacing, typography, useTheme } from "@/theme";
 import { useMutation, useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";

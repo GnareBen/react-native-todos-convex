@@ -1,5 +1,6 @@
 // app/(home)/tasks/index.tsx  ← écran liste + bouton vers création
-import TaskItem, { Task } from "@/components/tasks-item";
+import ProfileIcon from "@/components/profile/profile-icon";
+import TaskItem, { Task } from "@/components/task/tasks-item";
 import { radii, spacing, typography, useTheme } from "@/theme";
 import { useQuery } from "convex/react";
 import { router } from "expo-router";
@@ -12,9 +13,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { api } from "../../../../convex/_generated/api";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { api } from "../../../../convex/_generated/api";
 
 type Filter = "all" | "active" | "completed";
 
@@ -62,151 +63,160 @@ export default function TasksScreen() {
   };
 
   return (
-   <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={[styles.safe, { backgroundColor: colors.bgBase }]}>
-          <StatusBar
-            barStyle={isDark ? "light-content" : "dark-content"}
-            backgroundColor={colors.bgBase}
-          />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.bgBase }]}>
+        <StatusBar
+          barStyle={isDark ? "light-content" : "dark-content"}
+          backgroundColor={colors.bgBase}
+        />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={[styles.eyebrow, { color: colors.accent }]}>
-            MES TÂCHES
-          </Text>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>
-            Agenda
-          </Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={[styles.eyebrow, { color: colors.accent }]}>
+              MES TÂCHES
+            </Text>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>
+              Agenda
+            </Text>
+          </View>
+          <View style={styles.headerRight}>
+            <View style={styles.statsBlock}>
+              <Text style={[styles.statsNumber, { color: colors.accent }]}>
+                {stats.completed}
+              </Text>
+              <Text style={[styles.statsSlash, { color: colors.borderMuted }]}>
+                /
+              </Text>
+              <Text style={[styles.statsTotal, { color: colors.textMuted }]}>
+                {stats.total}
+              </Text>
+            </View>
+            <ProfileIcon />
+          </View>
         </View>
-        <View style={styles.statsBlock}>
-          <Text style={[styles.statsNumber, { color: colors.accent }]}>
-            {stats.completed}
-          </Text>
-          <Text style={[styles.statsSlash, { color: colors.borderMuted }]}>
-            /
-          </Text>
-          <Text style={[styles.statsTotal, { color: colors.textMuted }]}>
-            {stats.total}
-          </Text>
-        </View>
-      </View>
 
-      {/* Overdue warning */}
-      {stats.overdue > 0 && (
-        <View
-          style={[
-            styles.overdueBar,
-            {
-              backgroundColor: colors.errorMuted,
-              borderColor: colors.errorBorder,
-            },
-          ]}
-        >
-          <Text style={[styles.overdueText, { color: colors.error }]}>
-            ⚠ {stats.overdue} tâche{stats.overdue > 1 ? "s" : ""} en retard
-          </Text>
-        </View>
-      )}
-
-      {/* Progress bar */}
-      {stats.total > 0 && (
-        <View style={styles.progressContainer}>
+        {/* Overdue warning */}
+        {stats.overdue > 0 && (
           <View
             style={[
-              styles.progressTrack,
-              { backgroundColor: colors.bgSurface },
-            ]}
-          >
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  width: `${stats.progress * 100}%`,
-                  backgroundColor: colors.accent,
-                },
-              ]}
-            />
-          </View>
-          <Text style={[styles.progressLabel, { color: colors.textMuted }]}>
-            {Math.round(stats.progress * 100)}% complété
-          </Text>
-        </View>
-      )}
-
-      {/* Filters */}
-      <View style={styles.filterRow}>
-        {FILTERS.map((f) => (
-          <TouchableOpacity
-            key={f.value}
-            style={[
-              styles.filterChip,
-              { borderColor: colors.borderSubtle },
-              filter === f.value && {
-                backgroundColor: colors.accentMuted,
-                borderColor: colors.accent + "55",
+              styles.overdueBar,
+              {
+                backgroundColor: colors.errorMuted,
+                borderColor: colors.errorBorder,
               },
             ]}
-            onPress={() => setFilter(f.value)}
-            activeOpacity={0.75}
           >
-            <Text
-              style={[
-                styles.filterLabel,
-                { color: colors.textMuted },
-                filter === f.value && { color: colors.accent },
-              ]}
-            >
-              {f.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* List */}
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item._id}
-        renderItem={({ item }) => (
-          <TaskItem task={item as Task} onEdit={handleEdit} />
-        )}
-        contentContainerStyle={[
-          styles.list,
-          filtered.length === 0 && { flex: 1 },
-        ]}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={[styles.emptyIcon, { color: colors.borderMuted }]}>
-              ✦
-            </Text>
-            <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>
-              Aucune tâche
-            </Text>
-            <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
-              Appuyez sur{" "}
-              <Text style={{ color: colors.accent, fontWeight: "800" }}>+</Text>{" "}
-              pour en créer une
+            <Text style={[styles.overdueText, { color: colors.error }]}>
+              ⚠ {stats.overdue} tâche{stats.overdue > 1 ? "s" : ""} en retard
             </Text>
           </View>
-        }
-        showsVerticalScrollIndicator={false}
-      />
+        )}
 
-      {/* FAB */}
-      <TouchableOpacity
-        style={[
-          styles.fab,
-          {
-            backgroundColor: colors.accent,
-            shadowColor: colors.accentGlow,
-          },
-        ]}
-        onPress={() => router.push("/(tabs)/task/create")}
-        activeOpacity={0.85}
-      >
-        <Text style={[styles.fabIcon, { color: colors.textOnAccent }]}>+</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+        {/* Progress bar */}
+        {stats.total > 0 && (
+          <View style={styles.progressContainer}>
+            <View
+              style={[
+                styles.progressTrack,
+                { backgroundColor: colors.bgSurface },
+              ]}
+            >
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    width: `${stats.progress * 100}%`,
+                    backgroundColor: colors.accent,
+                  },
+                ]}
+              />
+            </View>
+            <Text style={[styles.progressLabel, { color: colors.textMuted }]}>
+              {Math.round(stats.progress * 100)}% complété
+            </Text>
+          </View>
+        )}
+
+        {/* Filters */}
+        <View style={styles.filterRow}>
+          {FILTERS.map((f) => (
+            <TouchableOpacity
+              key={f.value}
+              style={[
+                styles.filterChip,
+                { borderColor: colors.borderSubtle },
+                filter === f.value && {
+                  backgroundColor: colors.accentMuted,
+                  borderColor: colors.accent + "55",
+                },
+              ]}
+              onPress={() => setFilter(f.value)}
+              activeOpacity={0.75}
+            >
+              <Text
+                style={[
+                  styles.filterLabel,
+                  { color: colors.textMuted },
+                  filter === f.value && { color: colors.accent },
+                ]}
+              >
+                {f.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* List */}
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            <TaskItem task={item as Task} onEdit={handleEdit} />
+          )}
+          contentContainerStyle={[
+            styles.list,
+            filtered.length === 0 && { flex: 1 },
+          ]}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text style={[styles.emptyIcon, { color: colors.borderMuted }]}>
+                ✦
+              </Text>
+              <Text
+                style={[styles.emptyTitle, { color: colors.textSecondary }]}
+              >
+                Aucune tâche
+              </Text>
+              <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
+                Appuyez sur{" "}
+                <Text style={{ color: colors.accent, fontWeight: "800" }}>
+                  +
+                </Text>{" "}
+                pour en créer une
+              </Text>
+            </View>
+          }
+          showsVerticalScrollIndicator={false}
+        />
+
+        {/* FAB */}
+        <TouchableOpacity
+          style={[
+            styles.fab,
+            {
+              backgroundColor: colors.accent,
+              shadowColor: colors.accentGlow,
+            },
+          ]}
+          onPress={() => router.push("/(tabs)/task/create")}
+          activeOpacity={0.85}
+        >
+          <Text style={[styles.fabIcon, { color: colors.textOnAccent }]}>
+            +
+          </Text>
+        </TouchableOpacity>
+      </SafeAreaView>
     </GestureHandlerRootView>
   );
 }
@@ -220,6 +230,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xxl,
     paddingTop: spacing.xl,
     paddingBottom: spacing.sm,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
   },
   eyebrow: { ...typography.eyebrow, marginBottom: spacing.xs },
   title: { ...typography.display },

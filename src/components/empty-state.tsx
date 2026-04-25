@@ -1,4 +1,3 @@
-// components/EmptyState.tsx
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme, typography, spacing } from "../theme";
