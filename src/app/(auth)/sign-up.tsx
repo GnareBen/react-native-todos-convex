@@ -50,9 +50,7 @@ export default function Page() {
         // Redirect the user to the home page after signing up
         navigate: ({ session, decorateUrl }) => {
           if (session?.currentTask) {
-            // Handle pending session tasks
-            // See https://clerk.com/docs/guides/development/custom-flows/authentication/session-tasks
-            console.log(session?.currentTask);
+            //console.log(session?.currentTask);
             return;
           }
 

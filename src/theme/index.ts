@@ -162,10 +162,6 @@ export type ColorKey = keyof Omit<Theme, "priority">;
 
 // ─── Hook ──────────────────────────────────────────────────────────────────
 
-/**
- * Retourne la palette active selon le mode système (dark / light).
- * Usage : const { colors, isDark } = useTheme();
- */
 export function useTheme() {
     const scheme = useColorScheme();
     const isDark  = scheme !== "light";

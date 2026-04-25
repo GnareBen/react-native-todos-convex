@@ -33,7 +33,7 @@ export default function Page() {
       password,
     });
     if (error) {
-      console.error(JSON.stringify(error, null, 2));
+      //console.error(JSON.stringify(error, null, 2));
       return;
     }
 
@@ -74,7 +74,7 @@ export default function Page() {
       await signIn.finalize({
         navigate: ({ session, decorateUrl }) => {
           if (session?.currentTask) {
-            console.log(session?.currentTask);
+            //console.log(session?.currentTask);
             return;
           }
           const url = decorateUrl("/");
